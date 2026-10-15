@@ -1,0 +1,31 @@
+{
+  "name": "smru-hostel-care",
+  "version": "1.0.0",
+  "description": "Modern hostel complaint management system with real-time notifications and automatic escalation",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -p 3000",
+    "dev": "npx serve . -p 3000 --cors",
+    "build": "echo 'No build required - static files ready'",
+    "deploy": "echo 'Ready for deployment - upload all files'",
+    "test": "echo 'Open index.html to test the application'"
+  },
+  "keywords": [
+    "hostel-management",
+    "complaint-system", 
+    "student-portal",
+    "real-time-notifications",
+    "supabase",
+    "responsive-design"
+  ],
+  "author": "Janeth - SMRU",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/smru-hostel-care.git"
+  },
+  "homepage": "https://yourusername.github.io/smru-hostel-care"
+}

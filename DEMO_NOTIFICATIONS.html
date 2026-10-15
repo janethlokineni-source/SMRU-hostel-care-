@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔔 SMRU Hostel Care - Notification System Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 2rem;
+            color: white;
+            min-height: 100vh;
+        }
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #fff, #a8edea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .feature-desc {
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        .timeline {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        .timeline-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #a8edea;
+        }
+        .timeline-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        .timeline-time {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            min-width: 120px;
+            text-align: center;
+            margin-right: 1.5rem;
+        }
+        .timeline-desc {
+            flex: 1;
+            font-size: 1.1rem;
+        }
+        .demo-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin: 0.5rem;
+        }
+        .demo-button:hover {
+            transform: scale(1.05);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        .status-active { background: #22c55e; }
+        .status-pending { background: #f59e0b; }
+        .status-inactive { background: #ef4444; }
+        
+        .escalation-warning {
+            background: linear-gradient(45deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="hero">
+            <h1>🔔 Advanced Notification System</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem;">
+                Multi-channel instant notifications with automatic 24-hour escalation system
+            </p>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📧</div>
+                <div class="feature-title">Instant Email Alerts</div>
+                <div class="feature-desc">
+                    <span class="status-indicator status-pending"></span>Professional HTML emails sent within 1 minute<br>
+                    • Beautiful templates with complaint details<br>
+                    • Priority-based styling<br>
+                    • EmailJS integration (200 free emails/month)<br>
+                    • Supabase Edge Function fallback
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <div class="feature-title">SMS Notifications</div>
+                <div class="feature-desc">
+                    <span class="status-indicator status-pending"></span>Urgent complaints get SMS within 2 minutes<br>
+                    • Fast2SMS for Indian numbers (₹0.10/SMS)<br>
+                    • Twilio for international delivery<br>
+                    • Only for High/Critical priority<br>
+                    • Auto phone number formatting
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <div class="feature-title">In-App Notifications</div>
+                <div class="feature-desc">
+                    <span class="status-indicator status-active"></span>Real-time notifications in the dashboard<br>
+                    • Instant delivery (0 seconds)<br>
+                    • Sound alerts for urgent issues<br>
+                    • Live badge counters<br>
+                    • Cross-device synchronization
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <div class="feature-title">24-Hour Escalation</div>
+                <div class="feature-desc">
+                    <span class="status-indicator status-active"></span>Automatic escalation if no response<br>
+                    • 4h, 12h, 20h reminder SMS<br>
+                    • Auto-escalate to higher officials<br>
+                    • Cancelled when official responds<br>
+                    • Complete audit trail
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline">
+            <div class="timeline-title">⚡ Notification Timeline (When Student Submits Complaint)</div>
+            
+            <div class="timeline-step">
+                <div class="timeline-time">0 seconds</div>
+                <div class="timeline-desc">
+                    🔔 In-app notification sent to department officials<br>
+                    🎵 Sound alert played for urgent issues
+                </div>
+            </div>
+            
+            <div class="timeline-step">
+                <div class="timeline-time">30-60 sec</div>
+                <div class="timeline-desc">
+                    📧 Professional email sent with full complaint details<br>
+                    🎨 Beautiful HTML template with priority styling
+                </div>
+            </div>
+            
+            <div class="timeline-step">
+                <div class="timeline-time">1-2 min</div>
+                <div class="timeline-desc">
+                    📱 SMS alert sent (High/Critical priority only)<br>
+                    📞 Brief message with complaint reference and login link
+                </div>
+            </div>
+            
+            <div class="timeline-step">
+                <div class="timeline-time">4 hours</div>
+                <div class="timeline-desc">
+                    ⏰ First reminder SMS if no response yet<br>
+                    📧 Follow-up email notification
+                </div>
+            </div>
+            
+            <div class="timeline-step">
+                <div class="timeline-time">12 hours</div>
+                <div class="timeline-desc">
+                    ⚠️ Second reminder SMS<br>
+                    🔔 Urgent in-app notification
+                </div>
+            </div>
+            
+            <div class="timeline-step">
+                <div class="timeline-time">20 hours</div>
+                <div class="timeline-desc">
+                    🚨 Final warning SMS and email<br>
+                    ⏳ "Will escalate in 4 hours" warning
+                </div>
+            </div>
+        </div>
+
+        <div class="escalation-warning">
+            <h3 style="margin-top: 0;">🚨 AUTOMATIC ESCALATION AT 24 HOURS</h3>
+            <div class="timeline-step" style="background: rgba(239, 68, 68, 0.1);">
+                <div class="timeline-time" style="background: #ef4444;">24 hours</div>
+                <div class="timeline-desc">
+                    <strong>COMPLAINT ESCALATED TO HIGHER OFFICIALS</strong><br>
+                    📧 Email + 📱 SMS + 🔔 In-app notifications sent to:<br>
+                    • Wardens (if staff didn't respond)<br>
+                    • Administrators (if warden didn't respond)<br>
+                    • Complete audit trail maintained
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem;">
+            <h3>🎯 Current Configuration Status</h3>
+            <p style="margin-bottom: 2rem;">
+                <span class="status-indicator status-active"></span><strong>In-App Notifications:</strong> ✅ Active<br>
+                <span class="status-indicator status-active"></span><strong>Escalation System:</strong> ✅ Active<br>
+                <span class="status-indicator status-pending"></span><strong>Email Service:</strong> ⚠️ Needs Setup (EmailJS)<br>
+                <span class="status-indicator status-pending"></span><strong>SMS Service:</strong> ⚠️ Needs Setup (Fast2SMS/Twilio)<br>
+            </p>
+            
+            <button class="demo-button" onclick="window.open('NOTIFICATION_SETUP.md', '_blank')">
+                📖 Setup Guide (15 min)
+            </button>
+            <button class="demo-button" onclick="window.open('index.html', '_blank')">
+                🚀 Open Main App
+            </button>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 2rem; margin-top: 2rem;">
+            <h4>💡 Smart Features:</h4>
+            <ul style="line-height: 1.8;">
+                <li><strong>Priority-based routing:</strong> Critical issues get SMS immediately</li>
+                <li><strong>Graceful fallbacks:</strong> If EmailJS fails, tries Supabase Edge Function</li>
+                <li><strong>Multiple SMS providers:</strong> Fast2SMS for India, Twilio for international</li>
+                <li><strong>Auto phone formatting:</strong> Handles +91, 91, and 10-digit formats</li>
+                <li><strong>Escalation cancellation:</strong> Timer stops when official responds</li>
+                <li><strong>Real-time sync:</strong> Updates across all connected devices</li>
+                <li><strong>Audit logging:</strong> Complete trail of all notifications sent</li>
+                <li><strong>Cost optimization:</strong> Only sends SMS for urgent issues</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

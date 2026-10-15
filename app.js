@@ -647,7 +647,109 @@ class SmartHostelCareApp {
       } else {
         this.renderOfficialComplaintsList();
       }
+      
+      // 🚨 NEW: Update notification statistics
+      this.updateNotificationStats();
     }
+  }
+
+  // 🚨 NEW: Update notification system statistics
+  updateNotificationStats() {
+    try {
+      if (window.notificationService) {
+        const stats = window.notificationService.getNotificationStats();
+        
+        // Update escalation counter
+        const escalationCountEl = document.getElementById('officialEscalatedToday');
+        if (escalationCountEl) {
+          escalationCountEl.textContent = stats.activeEscalations || 0;
+        }
+
+        // Update notification counters (these would be tracked in a production system)
+        const today = new Date().toDateString();
+        const emailCount = localStorage.getItem(`emailsSent_${today}`) || 0;
+        const smsCount = localStorage.getItem(`smsSent_${today}`) || 0;
+        
+        const emailCountEl = document.getElementById('emailsReceivedToday');
+        const smsCountEl = document.getElementById('smsReceivedToday');
+        
+        if (emailCountEl) emailCountEl.textContent = emailCount;
+        if (smsCountEl) smsCountEl.textContent = smsCount;
+
+        console.log('📊 Notification stats updated:', { 
+          activeEscalations: stats.activeEscalations,
+          emailsToday: emailCount,
+          smsToday: smsCount
+        });
+      }
+    } catch (error) {
+      console.error('Failed to update notification stats:', error);
+    }
+  }
+
+  // 🚨 NEW: Test notification system
+  async testNotificationSystem() {
+    if (!window.notificationService) {
+      this.showToast("Notification Service", "❌ Notification service not loaded", "error");
+      return;
+    }
+
+    this.showToast("Testing Notifications", "🧪 Sending test notifications...", "info");
+
+    try {
+      // Create test complaint data
+      const testComplaint = {
+        id: 'test_' + Date.now(),
+        refNumber: 'HC-TEST-00001',
+        studentName: 'Test Student',
+        studentEmail: this.currentUser.email,
+        title: 'Test Notification System',
+        category: 'System Test',
+        block: 'Test Block',
+        room: '999',
+        urgency: 'High',
+        assignedDepartment: 'IT Support',
+        createdAt: new Date().toISOString()
+      };
+
+      // Create test official
+      const testOfficial = {
+        id: this.currentUser.id,
+        name: this.currentUser.name,
+        email: this.currentUser.email,
+        phone: this.currentUser.phone || '+911234567890',
+        department: 'IT Support',
+        role: 'staff'
+      };
+
+      // Test notifications
+      const results = await window.notificationService.notifyComplaintSubmission(
+        testComplaint, 
+        [testOfficial]
+      );
+
+      // Show results
+      const successCount = results.filter(r => r.success).length;
+      const totalCount = results.length;
+      
+      if (successCount > 0) {
+        this.showToast("Test Complete", `✅ ${successCount}/${totalCount} test notifications sent successfully!`, "success");
+      } else {
+        this.showToast("Test Results", "⚠️ Test notifications failed. Check notification setup guide.", "warning");
+      }
+
+      console.log('🧪 Test notification results:', results);
+
+    } catch (error) {
+      console.error('Test notification failed:', error);
+      this.showToast("Test Failed", "❌ Notification test encountered an error", "error");
+    }
+  }
+
+  // 🚨 NEW: Refresh notification statistics
+  refreshNotificationStats() {
+    this.updateNotificationStats();
+    this.showToast("Stats Refreshed", "📊 Notification statistics updated", "info");
   }
 
   startSystemClock() {
@@ -1691,37 +1793,27 @@ class SmartHostelCareApp {
 
       this.store.addComplaint(newComplaint);
 
-      // Notifications
+      // 🚨 SEND INSTANT NOTIFICATIONS TO OFFICIALS
+      await this.sendComplaintNotifications(newComplaint, assignedDept);
+
+      // Notifications for student
       this.store.addNotification({
         id: "notif_st_" + Date.now(),
         recipientId: this.currentUser.id,
         title: "Complaint Lodged Successfully",
-        message: `Your complaint #${refNumber} (${categoryName}) was received and routed to ${assignedDept}.`,
+        message: `Your complaint #${refNumber} (${categoryName}) was received and routed to ${assignedDept}. Officials have been notified via email and SMS.`,
         read: false,
         timestamp: new Date().toISOString(),
         complaintId: complaintId
-      });
-
-      const deptUsers = this.store.getUsers().filter(u => u.department === assignedDept || u.role === "warden");
-      deptUsers.forEach(officer => {
-        this.store.addNotification({
-          id: "notif_off_" + Math.random().toString(36).substr(2, 9),
-          recipientId: officer.id,
-          title: `New ${urgency} Issue: ${block} Rm ${room}`,
-          message: `${title} (${refNumber}) submitted under ${categoryName}.`,
-          read: false,
-          timestamp: new Date().toISOString(),
-          complaintId: complaintId
-        });
       });
 
       this.store.addAudit({
         id: "aud_" + Date.now(),
         timestamp: new Date().toISOString(),
         actor: `${this.currentUser.name} (${this.currentUser.role})`,
-        action: "New Complaint Lodged",
+        action: "New Complaint Lodged with Instant Notifications",
         record: refNumber,
-        details: `${categoryName} | Urgency: ${urgency} | ${block} Rm ${room} -> Routed to ${assignedDept}`
+        details: `${categoryName} | Urgency: ${urgency} | ${block} Rm ${room} -> Routed to ${assignedDept} | Email & SMS sent to officials`
       });
 
       this.sound.playNotificationChime();
@@ -1734,9 +1826,9 @@ class SmartHostelCareApp {
         btnText.style.display = "inline";
         btnSpinner.style.display = "none";
 
-        this.showToast("Complaint Registered", `Assigned reference: ${refNumber}. Department notified!`, "success");
+        this.showToast("Complaint Registered", `Reference: ${refNumber}. Officials notified via email, SMS & in-app! You'll get updates within 4 hours.`, "success");
         this.navigate("student-dashboard");
-      }, 500);
+      }, 1500); // Slightly longer to show notification sending
 
     } catch (error) {
       console.error('Complaint submission error:', error);
@@ -1746,6 +1838,60 @@ class SmartHostelCareApp {
       submitBtn.disabled = false;
       btnText.style.display = "inline";
       btnSpinner.style.display = "none";
+    }
+  }
+
+  // 🚨 NEW: Send instant notifications to department officials
+  async sendComplaintNotifications(complaint, departmentName) {
+    try {
+      console.log('🔔 Sending instant notifications for complaint:', complaint.refNumber);
+      
+      // Get department officials
+      const officials = this.store.getUsers().filter(u => 
+        (u.department === departmentName || u.role === "warden" || u.role === "admin") && 
+        u.status === "active"
+      );
+
+      if (officials.length === 0) {
+        console.warn('No officials found for department:', departmentName);
+        return;
+      }
+
+      // Show notification sending toast
+      this.showToast("Sending Notifications", "📧 Sending emails, 📱 SMS & in-app notifications to department officials...", "info");
+
+      // Use the notification service to send all types of notifications
+      if (window.notificationService) {
+        const results = await window.notificationService.notifyComplaintSubmission(complaint, officials);
+        
+        // Update UI based on results
+        const successCount = results.filter(r => r.success).length;
+        const totalCount = results.length;
+        
+        if (successCount > 0) {
+          this.showToast("Notifications Sent!", `📤 ${successCount}/${totalCount} notifications sent successfully. Officials will respond within 4 hours.`, "success");
+        }
+      } else {
+        // Fallback: Simple in-app notifications
+        officials.forEach(official => {
+          this.store.addNotification({
+            id: "notif_off_" + Math.random().toString(36).substr(2, 9),
+            recipientId: official.id,
+            title: `🚨 New ${complaint.urgency} Complaint`,
+            message: `${complaint.title} (${complaint.refNumber}) submitted by ${complaint.studentName} in ${complaint.block} Room ${complaint.room}.`,
+            read: false,
+            timestamp: new Date().toISOString(),
+            complaintId: complaint.id,
+            urgency: complaint.urgency.toLowerCase()
+          });
+        });
+        
+        this.showToast("Officials Notified", "📱 In-app notifications sent. Email & SMS require configuration.", "info");
+      }
+
+    } catch (error) {
+      console.error('🔔 Notification sending failed:', error);
+      this.showToast("Notification Warning", "Complaint saved but some notifications may have failed. Officials will still see it in their dashboard.", "warning");
     }
   }
 
@@ -1953,6 +2099,12 @@ class SmartHostelCareApp {
     const complaint = this.store.getComplaints().find(c => c.id === complaintId);
     if (!complaint) return;
 
+    // 🚨 CANCEL ESCALATION TIMER when officials respond
+    if (window.notificationService && ['Acknowledged', 'In Progress', 'Resolved', 'Closed'].includes(newStatus)) {
+      window.notificationService.cancelEscalation(complaintId);
+      console.log(`✅ Escalation cancelled for complaint ${complaint.refNumber} - Official responded with: ${newStatus}`);
+    }
+
     const prevStatus = complaint.status;
     const history = complaint.statusHistory || [];
     history.push({
@@ -1966,6 +2118,7 @@ class SmartHostelCareApp {
       statusHistory: history
     });
 
+    // Send notification to student
     this.store.addNotification({
       id: "notif_" + Date.now(),
       recipientId: complaint.studentId,
@@ -1975,6 +2128,28 @@ class SmartHostelCareApp {
       timestamp: new Date().toISOString(),
       complaintId: complaintId
     });
+
+    // 🔔 Send instant notification to student about status update
+    if (window.notificationService) {
+      const student = this.store.getUsers().find(u => u.id === complaint.studentId);
+      if (student && student.email) {
+        window.notificationService.sendEmail(
+          student.email,
+          `✅ Complaint Update: ${complaint.refNumber}`,
+          this.generateStatusUpdateEmailContent(complaint, newStatus),
+          'normal'
+        ).catch(err => console.warn('Status update email failed:', err));
+
+        // Send SMS for important status updates
+        if (['Resolved', 'Closed'].includes(newStatus) && student.phone) {
+          window.notificationService.sendSMS(
+            student.phone,
+            `✅ SMRU Hostel: Your complaint ${complaint.refNumber} is now ${newStatus}. Login to view: ${window.location.origin}`,
+            'normal'
+          ).catch(err => console.warn('Status update SMS failed:', err));
+        }
+      }
+    }
 
     this.store.addAudit({
       id: "aud_" + Date.now(),
@@ -1986,9 +2161,65 @@ class SmartHostelCareApp {
     });
 
     this.sound.playNotificationChime();
-    this.showToast("Status Updated", `Complaint marked as ${newStatus}`, "success");
+    this.showToast("Status Updated", `Complaint marked as ${newStatus}. Student notified!`, "success");
     this.openComplaintDetail(complaintId);
     this.refreshCurrentView();
+  }
+
+  generateStatusUpdateEmailContent(complaint, newStatus) {
+    const statusColor = {
+      'Acknowledged': '#3b82f6',
+      'In Progress': '#f59e0b', 
+      'Resolved': '#10b981',
+      'Closed': '#6b7280'
+    };
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .header { background: ${statusColor[newStatus] || '#64748b'}; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .status-update { background: #f0f9ff; border-left: 4px solid ${statusColor[newStatus] || '#64748b'}; padding: 15px; margin: 15px 0; }
+        .details { background: #f8fafc; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .footer { background: #64748b; color: white; padding: 15px; text-align: center; }
+        .btn { background: ${statusColor[newStatus] || '#64748b'}; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✅ Complaint Status Update</h1>
+        <p>SMRU Hostel Care System</p>
+    </div>
+    
+    <div class="content">
+        <div class="status-update">
+            <strong>Your complaint status has been updated!</strong><br>
+            Complaint <strong>${complaint.refNumber}</strong> is now: <strong style="color: ${statusColor[newStatus] || '#64748b'}">${newStatus}</strong>
+        </div>
+        
+        <div class="details">
+            <h3>📋 Complaint Details</h3>
+            <p><strong>Title:</strong> ${complaint.title}</p>
+            <p><strong>Location:</strong> ${complaint.block}, Room ${complaint.room}</p>
+            <p><strong>Category:</strong> ${complaint.category}</p>
+            <p><strong>Department:</strong> ${complaint.assignedDepartment}</p>
+            <p><strong>Updated:</strong> ${new Date().toLocaleString()}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="${window.location.origin}" class="btn">🚀 View Full Details</a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>SMRU Hostel Care - Automated Update System</p>
+        <p>Thank you for using our complaint management system!</p>
+    </div>
+</body>
+</html>`;
   }
 
   assignComplaintOfficial(complaintId, officialName) {

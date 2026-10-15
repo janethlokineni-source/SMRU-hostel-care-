@@ -116,7 +116,55 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 10. ANNOUNCEMENTS TABLE
+-- 9. NOTIFICATIONS TABLE (Enhanced)
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    recipient_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    complaint_id UUID REFERENCES public.complaints(id) ON DELETE CASCADE,
+    title VARCHAR(200) NOT NULL,
+    message TEXT NOT NULL,
+    notification_type VARCHAR(50) DEFAULT 'complaint' CHECK (notification_type IN ('complaint', 'reminder', 'escalation', 'system')),
+    urgency VARCHAR(50) DEFAULT 'normal' CHECK (urgency IN ('normal', 'high', 'critical')),
+    read_status BOOLEAN DEFAULT FALSE,
+    email_sent BOOLEAN DEFAULT FALSE,
+    sms_sent BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 10. NOTIFICATION LOGS (Track delivery status)
+CREATE TABLE IF NOT EXISTS public.notification_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    complaint_id UUID REFERENCES public.complaints(id) ON DELETE CASCADE,
+    notifications JSONB NOT NULL, -- Array of notification attempts
+    total_sent INTEGER DEFAULT 0,
+    total_failed INTEGER DEFAULT 0,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 11. ESCALATION LOGS (Track escalation history)
+CREATE TABLE IF NOT EXISTS public.escalation_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    complaint_id UUID NOT NULL REFERENCES public.complaints(id) ON DELETE CASCADE,
+    complaint_ref VARCHAR(50) NOT NULL,
+    original_official UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    escalated_to UUID[] NOT NULL, -- Array of user IDs
+    escalation_reason TEXT DEFAULT 'No response within 24 hours',
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 12. STAFF CONTACT INFO (Phone numbers for SMS)
+CREATE TABLE IF NOT EXISTS public.staff_contacts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID UNIQUE NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    phone_number VARCHAR(20) NOT NULL,
+    sms_enabled BOOLEAN DEFAULT TRUE,
+    email_notifications BOOLEAN DEFAULT TRUE,
+    escalation_level INTEGER DEFAULT 1, -- 1=staff, 2=warden, 3=admin
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 13. ANNOUNCEMENTS TABLE (Enhanced)
 CREATE TABLE IF NOT EXISTS public.announcements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,

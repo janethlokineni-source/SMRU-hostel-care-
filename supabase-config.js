@@ -274,6 +274,10 @@ class SupabaseAPI {
   // NOTIFICATION METHODS
   // ========================================================================
 
+  // ========================================================================
+  // NOTIFICATION METHODS
+  // ========================================================================
+
   async createNotification(recipientId, complaintId, title, message) {
     try {
       const { data, error } = await this.client
@@ -290,6 +294,87 @@ class SupabaseAPI {
     } catch (error) {
       console.error('Create notification error:', error);
       return { success: false, error: error.message };
+    }
+  }
+
+  async addNotification(notification) {
+    try {
+      const { data, error } = await this.client
+        .from('notifications')
+        .insert([{
+          recipient_id: notification.recipientId,
+          complaint_id: notification.complaintId,
+          title: notification.title,
+          message: notification.message,
+          read_status: notification.read || false,
+          notification_type: notification.type || 'complaint',
+          urgency: notification.urgency || 'normal'
+        }]);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error adding notification:', error);
+      throw error;
+    }
+  }
+
+  async logNotification(logEntry) {
+    try {
+      const { data, error } = await this.client
+        .from('notification_logs')
+        .insert([logEntry]);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error logging notification:', error);
+      throw error;
+    }
+  }
+
+  async logEscalation(escalationLog) {
+    try {
+      const { data, error } = await this.client
+        .from('escalation_logs')
+        .insert([escalationLog]);
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error logging escalation:', error);
+      throw error;
+    }
+  }
+
+  async getUsers() {
+    try {
+      const { data, error } = await this.client
+        .from('profiles')
+        .select('*')
+        .eq('account_status', 'active');
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting users:', error);
+      return [];
+    }
+  }
+
+  async getComplaint(complaintId) {
+    try {
+      const { data, error } = await this.client
+        .from('complaints')
+        .select('*')
+        .eq('id', complaintId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error getting complaint:', error);
+      return null;
     }
   }
 

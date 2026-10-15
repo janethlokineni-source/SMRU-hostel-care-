@@ -989,7 +989,9 @@ body::after {
 
 .gradient-text {
   background: linear-gradient(135deg, #38bdf8 0%, #10b981 50%, #f97316 100%);
+  background-clip: text;
   -webkit-background-clip: text;
+  color: transparent;
   -webkit-text-fill-color: transparent;
 }
 
@@ -1030,7 +1032,9 @@ body::after {
   font-size: 2.2rem;
   font-weight: 800;
   background: linear-gradient(135deg, #fff 0%, var(--accent-cyan) 100%);
+  background-clip: text;
   -webkit-background-clip: text;
+  color: transparent;
   -webkit-text-fill-color: transparent;
   line-height: 1.2;
 }
@@ -1591,7 +1595,9 @@ body::after {
   color: var(--text-muted);
   line-height: 1.5;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
+  box-orient: vertical;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -4732,7 +4738,9 @@ body.light-theme.mobile-device-mode .chassis-notch {
 
 .light-theme .stat-number {
   background: linear-gradient(135deg, var(--text-main-light) 0%, var(--accent-cyan) 100%);
+  background-clip: text;
   -webkit-background-clip: text;
+  color: transparent;
   -webkit-text-fill-color: transparent;
 }
 
@@ -5030,4 +5038,161 @@ body.light-theme.mobile-device-mode .chassis-notch {
   border-color: var(--glass-border-hover-light) !important;
   box-shadow: var(--glass-shadow-lg-light) !important;
   transform: translateY(-2px);
+}
+
+/* ============================================================================ */
+/* NOTIFICATION SYSTEM STYLES */
+/* ============================================================================ */
+
+.notification-metrics {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+}
+
+.notification-status .metric-icon {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+}
+
+.monitor-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.monitor-section h4 {
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.activity-feed {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid #06b6d4;
+}
+
+.activity-time {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.activity-desc {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+
+.timer-list {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.timer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.service-name {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.service-status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.notification-monitor {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Urgent notification styles */
+.urgent-notification {
+  animation: urgentPulse 1s ease-in-out infinite alternate;
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+@keyframes urgentPulse {
+  0% { 
+    border-color: #ef4444;
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
+  }
+  100% { 
+    border-color: #dc2626;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+  }
+}
+
+/* Light mode notification styles */
+.light-theme .monitor-section {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .activity-item,
+.light-theme .timer-item,
+.light-theme .service-item {
+  background: rgba(0, 0, 0, 0.05);
+  color: #374151;
+}
+
+.light-theme .activity-time {
+  color: #6b7280;
+}
+
+.light-theme .activity-desc {
+  color: #374151;
+}
+
+.light-theme .service-name {
+  color: #374151;
+}
+
+.light-theme .notification-monitor {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
